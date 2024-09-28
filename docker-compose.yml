@@ -34,6 +34,9 @@ services:
       DB_URL: mongodb://root:rootpassword@mongo_db:27017
       SENDER_EMAIL: ${SENDER_EMAIL}
       SENDER_PASSWORD: ${SENDER_PASSWORD}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
 
   # Posts Service (using MySQL)
   posts-app:
@@ -49,6 +52,9 @@ services:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: posts_db
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
 
   # Comments Service (using MySQL)
   comments-app:
