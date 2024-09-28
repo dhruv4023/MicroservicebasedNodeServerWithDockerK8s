@@ -1,0 +1,89 @@
+services:
+  # MySQL for the other services (posts, comments, main)
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: posts_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+  # MongoDB for the auth service
+  mongo_db:
+    # image: mongo:6.0
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  # Authentication Service (using MongoDB)
+  auth-app:
+    build: ./AuthenticationServer/
+    container_name: auth-service
+    image: dhruv4023/auth-server:latest
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo_db
+    environment:
+      DB_URL: mongodb://root:rootpassword@mongo_db:27017
+      SENDER_EMAIL: ${SENDER_EMAIL}
+      SENDER_PASSWORD: ${SENDER_PASSWORD}
+
+  # Posts Service (using MySQL)
+  posts-app:
+    build: ./PostServer/
+    container_name: post-service
+    image: dhruv4023/post-server:latest
+    ports:
+      - "5002:5002"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: posts_db
+
+  # Comments Service (using MySQL)
+  comments-app:
+    build: ./CommentServer/
+    container_name: comments-service
+    image: dhruv4023/comments-server:latest
+    ports:
+      - "5003:5003"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: comments_db
+
+  # Main Service (using MySQL)
+  main-app:
+    build: ./ManageAllMicroService/
+    container_name: main-service
+    image: dhruv4023/main-server:latest
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+      - auth-app
+      - posts-app
+      - comments-app
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: main_db
+      APP_HOST: host.docker.internal
+
+volumes:
+  db-data:
+  mongo-data:
