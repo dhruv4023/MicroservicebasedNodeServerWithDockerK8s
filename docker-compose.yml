@@ -10,16 +10,29 @@ services:
       - "3306:3306"
     volumes:
       - db-data:/var/lib/mysql
+      - ./init/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # MongoDB for the auth service
   mongo_db:
-    # image: mongo:6.0
-    image: mongodb/mongodb-community-server:latest
+    image: mongo:8.0
     container_name: mongodb-db
+    environment:
+      MONGODB_INITDB_ROOT_USERNAME: root
+      MONGODB_INITDB_ROOT_PASSWORD: rootpassword
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Authentication Service (using MongoDB)
   auth-app:
@@ -29,9 +42,10 @@ services:
     ports:
       - "5001:5001"
     depends_on:
-      - mongo_db
+      mongo_db:
+        condition: service_healthy
     environment:
-      DB_URL: mongodb://root:rootpassword@mongo_db:27017
+      DB_URL: mongodb://mongodb-db:27017
       SENDER_EMAIL: ${SENDER_EMAIL}
       SENDER_PASSWORD: ${SENDER_PASSWORD}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
@@ -46,7 +60,8 @@ services:
     ports:
       - "5002:5002"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DB_HOST: db
       DB_USER: root
@@ -64,7 +79,8 @@ services:
     ports:
       - "5003:5003"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       DB_HOST: db
       DB_USER: root
@@ -79,10 +95,14 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - db
-      - auth-app
-      - posts-app
-      - comments-app
+      db:
+        condition: service_healthy
+      auth-app:
+        condition: service_started
+      posts-app:
+        condition: service_started
+      comments-app:
+        condition: service_started
     environment:
       DB_HOST: db
       DB_USER: root

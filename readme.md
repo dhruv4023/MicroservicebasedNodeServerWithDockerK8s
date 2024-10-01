@@ -15,7 +15,6 @@ Ensure you have the following installed on your local machine:
 ## Getting Started
 1. Clone the Repository
     ```bash
-    Copy code
     git clone https://github.com/dhruv4023/MicroservicebasedNodeServerWithDocker.git
     cd MicroservicebasedNodeServerWithDocker
     ```
@@ -24,7 +23,7 @@ Ensure you have the following installed on your local machine:
 Each service has its own Dockerfile. To build and run all services, execute the following command:
 
     ```bash
-    docker-compose up --build
+    docker-compose up --build -d
     ```
     This will build and start all the services, and you can view the logs in the terminal.
 
