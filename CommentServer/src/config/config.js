@@ -4,12 +4,12 @@ dotenv.config();
 export default {
     // database details
     database: {
-        database: process.env.DB_NAME || 'comment_db',
-        username: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME || 'comments_db',
+        username: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD || 'postgres',
         host: process.env.DB_HOST || 'localhost',
-        dialect: process.env.DB_DIALECT || 'mysql',
-        port: process.env.DB_PORT || '3306',
+        dialect: process.env.DB_DIALECT || 'postgres',
+        port: process.env.DB_PORT || '5432',
     },
     //  ssl Keys details
     certificate: {

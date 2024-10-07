@@ -1,6 +1,6 @@
 services:
   # MySQL for the other services (posts, comments, main)
-  db:
+  mysql-db:
     image: mysql:8.0
     container_name: mysql-db
     environment:
@@ -9,10 +9,27 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db-data:/var/lib/mysql
+      - mysql-db-data:/var/lib/mysql
       - ./init/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "mysql -uroot -prootpassword -e 'use main_db;'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PostgreSQL for Comments Service
+  postgres-db:
+    image: postgres:17
+    container_name: postgres-db
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: comments_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -d comments_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,11 +45,6 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.runCommand({ ping: 1 })"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # Authentication Service (using MongoDB)
   auth-app:
@@ -43,7 +55,7 @@ services:
       - "5001:5001"
     depends_on:
       mongo_db:
-        condition: service_healthy
+        condition: service_started
     environment:
       DB_URL: mongodb://mongodb-db:27017
       SENDER_EMAIL: ${SENDER_EMAIL}
@@ -60,10 +72,10 @@ services:
     ports:
       - "5002:5002"
     depends_on:
-      db:
+      mysql-db:
         condition: service_healthy
     environment:
-      DB_HOST: db
+      DB_HOST: mysql-db
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: posts_db
@@ -71,7 +83,7 @@ services:
       CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
       CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
 
-  # Comments Service (using MySQL)
+  # Comments Service (using Postgres)
   comments-app:
     build: ./CommentServer/
     container_name: comments-service
@@ -79,13 +91,15 @@ services:
     ports:
       - "5003:5003"
     depends_on:
-      db:
+      postgres-db:
         condition: service_healthy
     environment:
-      DB_HOST: db
-      DB_USER: root
-      DB_PASSWORD: rootpassword
       DB_NAME: comments_db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: postgres-db
+      DB_DIALECT: postgres
+      DB_PORT: 5432
 
   # Main Service (using MySQL)
   main-app:
@@ -95,7 +109,7 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      db:
+      mysql-db:
         condition: service_healthy
       auth-app:
         condition: service_started
@@ -104,12 +118,13 @@ services:
       comments-app:
         condition: service_started
     environment:
-      DB_HOST: db
+      DB_HOST: mysql-db
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: main_db
       APP_HOST: host.docker.internal
 
 volumes:
-  db-data:
+  mysql-db-data:
   mongo-data:
+  postgres-data:
