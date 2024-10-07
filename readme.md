@@ -19,13 +19,18 @@ Ensure you have the following installed on your local machine:
     cd MicroservicebasedNodeServerWithDocker
     ```
 
-2. Build Docker Images
+2. Build Docker Images and start running a compose container
 Each service has its own Dockerfile. To build and run all services, execute the following command:
 
     ```bash
-    docker-compose up --build -d
+    docker-compose up --build
     ```
     This will build and start all the services, and you can view the logs in the terminal.
+
+3. to stop and remove compose container with data
+    ```bash
+    docker-compose down -v
+    ```
 
 3. Accessing Services
     - Main Service: Accessible at http://localhost:5000
