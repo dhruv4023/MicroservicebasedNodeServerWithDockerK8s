@@ -9,7 +9,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - mysql-db-data:/var/lib/mysql
+      - ./db-data/mysql-db-data:/var/lib/mysql
       - ./init/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: ["CMD-SHELL", "mysql -uroot -prootpassword -e 'use main_db;'"]
@@ -27,9 +27,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - ./db-data/postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -d comments_db"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres && psql -U postgres -d comments_db",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -44,7 +48,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
+      - ./db-data/mongo-data:/data/db
 
   # Authentication Service (using MongoDB)
   auth-app:
@@ -123,8 +127,7 @@ services:
       DB_PASSWORD: rootpassword
       DB_NAME: main_db
       APP_HOST: host.docker.internal
-
-volumes:
-  mysql-db-data:
-  mongo-data:
-  postgres-data:
+# volumes:
+#   mysql-db-data:
+#   mongo-data:
+#   postgres-data:
