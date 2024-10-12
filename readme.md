@@ -25,6 +25,12 @@ Each service has its own Dockerfile. To build and run all services, execute the 
     ```bash
     docker-compose up --build
     ```
+
+    ***Note**: use following to detach the terminal after build*
+    ```bash
+    docker-compose up --build -d
+    ```
+    
     This will build and start all the services, and you can view the logs in the terminal.
 
 3. to stop and remove compose container with data

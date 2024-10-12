@@ -56,12 +56,14 @@ services:
     container_name: auth-service
     image: dhruv4023/auth-server:latest
     ports:
-      - "5001:5001"
+      - "${AUTH_APP_PORT}:${AUTH_APP_PORT}"
     depends_on:
       mongo_db:
         condition: service_started
     environment:
-      DB_URL: mongodb://mongodb-db:27017
+      APP_PORT: ${AUTH_APP_PORT}
+      DB_URL: ${MONGO_DB_URL} 
+      DB_NAME: ${MONGO_DB_NAME} 
       SENDER_EMAIL: ${SENDER_EMAIL}
       SENDER_PASSWORD: ${SENDER_PASSWORD}
       CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
@@ -126,7 +128,10 @@ services:
       DB_USER: root
       DB_PASSWORD: rootpassword
       DB_NAME: main_db
-      APP_HOST: host.docker.internal
+      APP_HOST: ${APP_HOST}
+      AUTH_API_END: ${MAIN_AUTH_API_END}
+      POST_API_END: ${MAIN_POST_API_END}
+      COMMENTS_API_END: ${MAIN_COMMENTS_API_END}
 # volumes:
 #   mysql-db-data:
 #   mongo-data:
