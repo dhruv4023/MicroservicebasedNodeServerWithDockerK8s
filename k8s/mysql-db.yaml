@@ -25,6 +25,14 @@ spec:
                 secretKeyRef:
                   name: mysql-secret
                   key: mysql-password
+          volumeMounts:
+          - name: init-scripts
+            mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: init-scripts
+        configMap:
+          name: mysql-init-scripts
+
             # - name: MYSQL_USER
             #   valueFrom:
             #     secretKeyRef:

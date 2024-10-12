@@ -23,6 +23,15 @@ spec:
           env:
             - name: DB_NAME
               value: main_db
+            - name: DB_HOST
+              value: mysql-service
+            - name: AUTH_API_END
+              value: http://auth-service:5001
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-password
 
 ---
 apiVersion: v1
